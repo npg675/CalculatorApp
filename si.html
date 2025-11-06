@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculator - Add Three Numbers</title>
+    <title>Simple Interest Calculator</title>
     <style>
         * {
             margin: 0;
@@ -117,6 +117,17 @@
             color: #888;
         }
 
+        .input-hint {
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 5px;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode .input-hint {
+            color: #777;
+        }
+
         .button-group {
             margin: 35px 0;
         }
@@ -150,8 +161,10 @@
             border-radius: 10px;
             min-height: 60px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            gap: 15px;
             transition: background 0.3s ease;
         }
 
@@ -159,20 +172,36 @@
             background: #1e1e2e;
         }
 
-        .result {
-            font-size: 1.5em;
-            font-weight: 600;
-            color: #333;
-            transition: color 0.3s ease;
+        .result-item {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+            transition: border-color 0.3s ease;
         }
 
-        body.dark-mode .result {
-            color: #f0f0f0;
+        .result-item:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 1.1em;
+            padding-top: 15px;
+            margin-top: 5px;
+            border-top: 2px solid #667eea;
+        }
+
+        body.dark-mode .result-item {
+            border-bottom-color: #444;
+        }
+
+        body.dark-mode .result-item:last-child {
+            border-top-color: #667eea;
         }
 
         .result-label {
             color: #666;
-            margin-right: 10px;
+            font-weight: 600;
             transition: color 0.3s ease;
         }
 
@@ -182,7 +211,13 @@
 
         .result-value {
             color: #667eea;
-            font-size: 1.3em;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .result-item:last-child .result-value {
+            color: #667eea;
+            font-size: 1.4em;
         }
 
         .error {
@@ -249,6 +284,17 @@
                 height: 40px;
                 font-size: 18px;
             }
+
+            .result-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .result-value {
+                width: 100%;
+                text-align: right;
+            }
         }
     </style>
 </head>
@@ -257,34 +303,45 @@
         <button class="dark-mode-toggle" onclick="toggleDarkMode()" id="darkModeToggle" title="Toggle Dark Mode">
             🌙
         </button>
-        <h1>Calculator</h1>
+        <h1>Simple Interest Calculator</h1>
         
         <div class="input-group">
-            <label for="num1">First Number:</label>
-            <input type="number" id="num1" placeholder="Enter first number" step="any">
-            <div class="error" id="error1">Please enter a valid number</div>
+            <label for="principal">Principal Amount (P):</label>
+            <input type="number" id="principal" placeholder="Enter principal amount" step="any" min="0">
+            <div class="input-hint">The initial amount of money</div>
+            <div class="error" id="error1">Please enter a valid principal amount</div>
         </div>
 
         <div class="input-group">
-            <label for="num2">Second Number:</label>
-            <input type="number" id="num2" placeholder="Enter second number" step="any">
-            <div class="error" id="error2">Please enter a valid number</div>
+            <label for="rate">Rate of Interest (R):</label>
+            <input type="number" id="rate" placeholder="Enter rate of interest" step="any" min="0">
+            <div class="input-hint">Annual interest rate in percentage (%)</div>
+            <div class="error" id="error2">Please enter a valid rate of interest</div>
         </div>
 
         <div class="input-group">
-            <label for="num3">Third Number:</label>
-            <input type="number" id="num3" placeholder="Enter third number" step="any">
-            <div class="error" id="error3">Please enter a valid number</div>
+            <label for="time">Time Period (T):</label>
+            <input type="number" id="time" placeholder="Enter time period" step="any" min="0">
+            <div class="input-hint">Time period in years</div>
+            <div class="error" id="error3">Please enter a valid time period</div>
         </div>
 
         <div class="button-group">
-            <button onclick="calculate()">Add</button>
+            <button onclick="calculateSI()">Calculate</button>
         </div>
 
-        <div class="result-container">
-            <div class="result">
-                <span class="result-label">Result:</span>
-                <span class="result-value" id="result">-</span>
+        <div class="result-container" id="resultContainer" style="display: none;">
+            <div class="result-item">
+                <span class="result-label">Principal Amount:</span>
+                <span class="result-value" id="principalResult">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Simple Interest:</span>
+                <span class="result-value" id="interestResult">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Total Amount:</span>
+                <span class="result-value" id="totalResult">-</span>
             </div>
         </div>
     </div>
@@ -313,12 +370,15 @@
         // Initialize dark mode on page load
         initDarkMode();
 
-        function calculate() {
+        function calculateSI() {
             // Get input values
-            const num1Input = document.getElementById('num1');
-            const num2Input = document.getElementById('num2');
-            const num3Input = document.getElementById('num3');
-            const resultElement = document.getElementById('result');
+            const principalInput = document.getElementById('principal');
+            const rateInput = document.getElementById('rate');
+            const timeInput = document.getElementById('time');
+            const resultContainer = document.getElementById('resultContainer');
+            const principalResult = document.getElementById('principalResult');
+            const interestResult = document.getElementById('interestResult');
+            const totalResult = document.getElementById('totalResult');
             const error1 = document.getElementById('error1');
             const error2 = document.getElementById('error2');
             const error3 = document.getElementById('error3');
@@ -329,53 +389,68 @@
             error3.style.display = 'none';
 
             // Get values and convert to numbers
-            const num1 = parseFloat(num1Input.value);
-            const num2 = parseFloat(num2Input.value);
-            const num3 = parseFloat(num3Input.value);
+            const principal = parseFloat(principalInput.value);
+            const rate = parseFloat(rateInput.value);
+            const time = parseFloat(timeInput.value);
 
             // Validate inputs
             let isValid = true;
 
-            if (num1Input.value === '' || isNaN(num1)) {
+            if (principalInput.value === '' || isNaN(principal) || principal < 0) {
                 error1.style.display = 'block';
                 isValid = false;
             }
 
-            if (num2Input.value === '' || isNaN(num2)) {
+            if (rateInput.value === '' || isNaN(rate) || rate < 0) {
                 error2.style.display = 'block';
                 isValid = false;
             }
 
-            if (num3Input.value === '' || isNaN(num3)) {
+            if (timeInput.value === '' || isNaN(time) || time < 0) {
                 error3.style.display = 'block';
                 isValid = false;
             }
 
             // Calculate and display result
             if (isValid) {
-                const sum = num1 + num2 + num3;
-                resultElement.textContent = sum;
+                // Simple Interest Formula: SI = (P × R × T) / 100
+                const simpleInterest = (principal * rate * time) / 100;
+                const totalAmount = principal + simpleInterest;
+
+                // Format numbers with commas and 2 decimal places
+                principalResult.textContent = formatNumber(principal);
+                interestResult.textContent = formatNumber(simpleInterest);
+                totalResult.textContent = formatNumber(totalAmount);
+
+                resultContainer.style.display = 'flex';
             } else {
-                resultElement.textContent = '-';
+                resultContainer.style.display = 'none';
             }
         }
 
+        function formatNumber(num) {
+            return num.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
         // Allow Enter key to trigger calculation
-        document.getElementById('num1').addEventListener('keypress', function(e) {
+        document.getElementById('principal').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                calculate();
+                calculateSI();
             }
         });
 
-        document.getElementById('num2').addEventListener('keypress', function(e) {
+        document.getElementById('rate').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                calculate();
+                calculateSI();
             }
         });
 
-        document.getElementById('num3').addEventListener('keypress', function(e) {
+        document.getElementById('time').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                calculate();
+                calculateSI();
             }
         });
     </script>
