@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculator - Add Two Numbers</title>
+    <title>Calculator - Add Three Numbers</title>
     <style>
         * {
             margin: 0;
@@ -170,6 +170,12 @@
             <div class="error" id="error2">Please enter a valid number</div>
         </div>
 
+        <div class="input-group">
+            <label for="num3">Third Number:</label>
+            <input type="number" id="num3" placeholder="Enter third number" step="any">
+            <div class="error" id="error3">Please enter a valid number</div>
+        </div>
+
         <div class="button-group">
             <button onclick="calculate()">Add</button>
         </div>
@@ -187,17 +193,21 @@
             // Get input values
             const num1Input = document.getElementById('num1');
             const num2Input = document.getElementById('num2');
+            const num3Input = document.getElementById('num3');
             const resultElement = document.getElementById('result');
             const error1 = document.getElementById('error1');
             const error2 = document.getElementById('error2');
+            const error3 = document.getElementById('error3');
 
             // Reset error messages
             error1.style.display = 'none';
             error2.style.display = 'none';
+            error3.style.display = 'none';
 
             // Get values and convert to numbers
             const num1 = parseFloat(num1Input.value);
             const num2 = parseFloat(num2Input.value);
+            const num3 = parseFloat(num3Input.value);
 
             // Validate inputs
             let isValid = true;
@@ -212,9 +222,14 @@
                 isValid = false;
             }
 
+            if (num3Input.value === '' || isNaN(num3)) {
+                error3.style.display = 'block';
+                isValid = false;
+            }
+
             // Calculate and display result
             if (isValid) {
-                const sum = num1 + num2;
+                const sum = num1 + num2 + num3;
                 resultElement.textContent = sum;
             } else {
                 resultElement.textContent = '-';
@@ -229,6 +244,12 @@
         });
 
         document.getElementById('num2').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculate();
+            }
+        });
+
+        document.getElementById('num3').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 calculate();
             }
