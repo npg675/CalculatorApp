@@ -38,7 +38,3 @@ No build tools or package managers are required—the project runs entirely in t
 - Expand operations (subtraction, multiplication, division) for the addition calculator.
 - Add compound interest and loan amortization calculators.
 - Introduce localization (number formats, languages) and accessibility enhancements.
-
-## License
-
-This project is currently unlicensed. Add a license file if you intend to share or distribute it.
